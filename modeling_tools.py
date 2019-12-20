@@ -19,59 +19,6 @@ from imblearn.pipeline import Pipeline
 from sklearn.base import BaseEstimator, TransformerMixin, ClassifierMixin
 
 
-'''
-# transformer for non-text based features
-class NumericalSelector(BaseEstimator, TransformerMixin):
-    def __init__(self, cols, scaler, params):
-        self.cols = cols
-        self.scaler = scaler
-        self.params = params
-        self.iScaler = None
-
-    def fit(self, df, y=None):
-        if self.params['scale']:
-            temp = self.params['scale']
-            del self.params['scale']
-            self.iScaler = self.scaler(**self.params)
-            self.params['scale'] = temp
-            self.iScaler.fit(df[self.cols].values)
-        return self
-
-    def transform(self, df):
-        if len(self.cols) > 0:
-            if self.iScaler is not None:
-                return self.iScaler.transform(df[self.cols].values)
-            else:
-                return df[self.cols].values
-        else:
-            return self
-        
-            
-        
-        if len(self.cols) > 0:
-            return df[self.cols].notnull()
-        else:
-            return df.notnull()
-
-#transformer to text based features
-class TextSelector(BaseEstimator, TransformerMixin):
-    def __init__(self, col, vec, params):
-        self.col = col
-        self.vec = vec
-        self.params = params
-        self.iVec = None
-
-    def transform(self, df, y=None):
-        
-        return self.iVec.transform(df[self.col].fillna("").values)
-        
-
-    def fit(self, df, y=None):        
-        self.iVec = self.vec(**self.params)
-        self.iVec.fit(df[self.col].fillna("").values)
-        return self
-'''
-
 class EnsembleClassifier(BaseEstimator, ClassifierMixin):
 
     def __init__(self, binary_clf, binary_clf_params, bucket_clf, bucket_clf_params, judge):
@@ -293,16 +240,6 @@ class BucketClassifier(BaseEstimator, ClassifierMixin):
         return preds
 
 
-
-
-
-
-
-
-
-
-
-
 class ColumnSelector(BaseEstimator, TransformerMixin):
     def __init__(self, cols):
         self.cols = cols
@@ -339,49 +276,6 @@ class FastTextSelector(BaseEstimator, TransformerMixin):
             return df
 
 
-
-'''
-class NumericalSelector2(BaseEstimator, TransformerMixin):
-    def __init__(self, cols):
-        self.cols = cols
-
-    def fit(self, df, y=None):
-        return self
-
-    def transform(self, df):
-        return df[self.cols].values
-
-class TextSelector2(BaseEstimator, TransformerMixin):
-    def __init__(self, col):
-        self.col = col
-
-    def transform(self, df):
-        return df[self.col]
-
-    def fit(self, df, y=None):
-        return self
-
-class ScalerMixin(BaseEstimator, TransformerMixin):
-    def __init__(self, scaler, params):
-        self.scaler = scaler
-        self.params = params
-        self.iScaler = None
-
-    def transform(self, x):
-        if self.iScaler is not None and x.shape[1] > 0:
-            return self.iScaler.transform(x)
-        else:
-            return x
-
-    def fit(self, x, y=None):
-        if self.params['scale'] and x.shape[1] > 0:
-            temp = self.params['scale']
-            del self.params['scale']
-            self.iScaler = self.scaler(**self.params)
-            self.params['scale'] = temp
-            self.iScaler.fit(x)
-        return self
-'''
 
 def worker(
     train_X, train_y, validation_X, validation_y,
@@ -469,45 +363,6 @@ def worker(
                                                     ('sampler', smpl(**s_p)),
                                                     ('classifier', clf(**c_p))
                                                 ])
-
-                                                '''
-                                                model = Pipeline([
-                                                    ('features', FeatureUnion([
-                                                        ('embedded', Pipeline([
-                                                            ('fasttext', fast_selector(**fast_col)),
-                                                        ])),
-                                                        ('text', Pipeline([
-                                                            ('article', ColumnSelector(corpus)),
-                                                            #('article', TextSelector2('Lemma_stripped')),
-                                                            ('vectorizer', vec(**v_p))
-                                                        ])),
-                                                        ('numerical', Pipeline([
-                                                            ('meta', ColumnSelector(ftr)),
-                                                            #('meta', NumericalSelector2(ftr)),
-                                                            ('scaler', sca(**sca_p))
-                                                            #('scaler', ScalerMixin(sca, sca_p))
-                                                        ])),
-                                                    ])),
-                                                    ('selector', sel(**sel_p)),
-                                                    ('sampler', smpl(**s_p)),
-                                                    #('scaler', sca(**sca_p)),
-                                                    ('classifier', clf(**c_p))
-                                                ])
-                                                '''
-
-                                                '''
-                                                model = Pipeline([
-                                                    ('features', FeatureUnion([
-                                                        #('article', TextSelector2('Lemma_stripped')),
-                                                        #('vec', vec(**v_p)),
-                                                        ('article', TextSelector('Lemma_stripped', vec, v_p)),
-                                                        ('meta', NumericalSelector(ftr, sca, sca_p)),
-                                                    ])),
-                                                    #('sampler', smpl(**s_p)),
-                                                    ('selector', sel(**sel_p)),
-                                                    #('scaler', sca(**sca_p)),
-                                                    ('classifier', clf(**c_p))
-                                                ])'''
 
                                                 model.fit(train_X, train_y)
                                                 preds = model.predict(validation_X)
